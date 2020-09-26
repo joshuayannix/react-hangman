@@ -8,6 +8,11 @@ import img4 from "./4.jpg";
 import img5 from "./5.jpg";
 import img6 from "./6.jpg";
 
+import {randomWord} from './words';
+
+
+
+
 class Hangman extends Component {
   /** by default, allow 6 guesses and use provided gallows images. */
   static defaultProps = {
@@ -17,8 +22,9 @@ class Hangman extends Component {
 
   constructor(props) {
     super(props);
-    this.state = { nWrong: 0, guessed: new Set(), answer: "apple" };
+    this.state = { nWrong: 0, guessed: new Set(), answer: randomWord() };
     this.handleGuess = this.handleGuess.bind(this);
+    this.reset = this.reset.bind(this)
   }
 
   /** guessedWord: show current-state of word:
@@ -42,10 +48,19 @@ class Hangman extends Component {
     }));
   }
 
+  reset() {
+    // pick new random word, reset guessed list, reset number of wrong guesses
+    this.setState(st => ({
+      answer: randomWord(),
+      nWrong: st.nWrong = 0
+    }));
+  }
+
   /** generateButtons: return array of letter buttons to render */
   generateButtons() {
     return "abcdefghijklmnopqrstuvwxyz".split("").map(ltr => (
       <button
+        key={ltr}
         value={ltr}
         onClick={this.handleGuess}
         disabled={this.state.guessed.has(ltr)}
@@ -55,14 +70,25 @@ class Hangman extends Component {
     ));
   }
 
+  
+
   /** render: render game */
   render() {
+    const gameOver = this.state.nWrong >= this.props.maxWrong;
+    const altText = `${this.state.nWrong}/${this.props.maxWrong} guesses`
     return (
       <div className='Hangman'>
         <h1>Hangman</h1>
-        <img src={this.props.images[this.state.nWrong]} />
-        <p className='Hangman-word'>{this.guessedWord()}</p>
-        <p className='Hangman-btns'>{this.generateButtons()}</p>
+        <img src={this.props.images[this.state.nWrong]} alt={altText}/>
+        <p className=''>Guessed Wrong: {this.state.nWrong}</p>
+        <button onClick={this.reset}>Reset</button>
+        <p>{this.state.answer}</p>
+        <p className='Hangman-word'>
+          {!gameOver ? this.guessedWord() : this.state.answer}
+        </p>
+        <p className='Hangman-btns'>
+          {!gameOver ? this.generateButtons() : `You lose`}
+        </p>
       </div>
     );
   }
